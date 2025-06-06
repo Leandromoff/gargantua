@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}SSL Certificate - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'network_tools:dashboard' %}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-lock me-2"></i>SSL Certificate Check
+            </h1>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-play-circle me-2"></i>Verificar Certificado SSL
+                        </h5>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="hostname" class="form-label">
+                                    <i class="bi bi-globe me-1"></i>Hostname
+                                </label>
+                                <input type="text" class="form-control" id="hostname" name="hostname" 
+                                       placeholder="exemplo.com" required
+                                       value="{{ request.POST.hostname|default:'' }}">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Digite o nome do host (sem https://)
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="port" class="form-label">
+                                    <i class="bi bi-hash me-1"></i>Porta
+                                </label>
+                                <input type="number" class="form-control" id="port" name="port" 
+                                       value="{{ request.POST.port|default:'443' }}" min="1" max="65535">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Porta SSL/TLS (padrão: 443)
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="bi bi-play-circle me-2"></i>Verificar Certificado
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">
+                            <i class="bi bi-info-circle me-2"></i>Sobre SSL Certificate Check
+                        </h6>
+                        <p class="card-text small">
+                            Esta ferramenta verifica informações detalhadas sobre certificados SSL/TLS, 
+                            incluindo validade, emissor e configurações de segurança.
+                        </p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Validade do certificado</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Informações do emissor</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Subject Alternative Names</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Versão e número de série</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Datas de início e expiração</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if result %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if result.success %}
+                                <i class="bi bi-check-circle text-success me-2"></i>Certificado SSL para {{ result.hostname }}:{{ result.port }}
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger me-2"></i>Erro ao verificar certificado para {{ result.hostname }}:{{ result.port }}
+                            {% endif %}
+                        </h5>
+                        
+                        {% if result.success %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Certificado SSL verificado com sucesso
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-person me-2"></i>Informações do Subject</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm table-dark mb-0">
+                                                {% for key, value in result.subject.items %}
+                                                <tr>
+                                                    <td><strong>{{ key }}</strong></td>
+                                                    <td>{{ value }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-building me-2"></i>Informações do Emissor</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm table-dark mb-0">
+                                                {% for key, value in result.issuer.items %}
+                                                <tr>
+                                                    <td><strong>{{ key }}</strong></td>
+                                                    <td>{{ value }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-calendar me-2"></i>Validade</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm table-dark mb-0">
+                                                <tr>
+                                                    <td><strong>Válido desde</strong></td>
+                                                    <td>{{ result.not_before }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Válido até</strong></td>
+                                                    <td>{{ result.not_after }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Versão</strong></td>
+                                                    <td>{{ result.version }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Número de Série</strong></td>
+                                                    <td><code>{{ result.serial_number }}</code></td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if result.san %}
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-list me-2"></i>Subject Alternative Names</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-unstyled mb-0">
+                                                {% for san_type, san_value in result.san %}
+                                                <li><code>{{ san_value }}</code></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ result.error }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus no campo hostname
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('hostname').focus();
+    });
+    
+    // Adicionar efeito de loading no botão de submit
+    document.querySelector('form').addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Verificando...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}
+

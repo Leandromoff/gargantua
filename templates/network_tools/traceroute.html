@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Traceroute - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'network_tools:dashboard' %}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-diagram-3 me-2"></i>Traceroute
+            </h1>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-play-circle me-2"></i>Executar Traceroute
+                        </h5>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="host" class="form-label">
+                                    <i class="bi bi-globe me-1"></i>Host ou IP de destino
+                                </label>
+                                <input type="text" class="form-control" id="host" name="host" 
+                                       placeholder="exemplo.com ou 8.8.8.8" required
+                                       value="{{ request.POST.host|default:'' }}">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Digite o destino para rastrear a rota
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="bi bi-play-circle me-2"></i>Executar Traceroute
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">
+                            <i class="bi bi-info-circle me-2"></i>Sobre o Traceroute
+                        </h6>
+                        <p class="card-text small">
+                            O Traceroute mostra o caminho que os pacotes percorrem da origem até o destino, 
+                            listando todos os roteadores intermediários.
+                        </p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Mapeia rota de rede</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Identifica gargalos</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Localiza pontos de falha</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Analisa latência por hop</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if result %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if result.success %}
+                                <i class="bi bi-check-circle text-success me-2"></i>Resultado do Traceroute para {{ result.host }}
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger me-2"></i>Erro no Traceroute para {{ result.host }}
+                            {% endif %}
+                        </h5>
+                        
+                        {% if result.success %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Traceroute executado com sucesso
+                            </div>
+                            
+                            <div class="bg-dark p-3 rounded">
+                                <pre class="text-light mb-0" style="font-family: 'Courier New', monospace; font-size: 0.9rem;">{{ result.output }}</pre>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ result.error }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus no campo host
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('host').focus();
+    });
+    
+    // Adicionar efeito de loading no botão de submit
+    document.querySelector('form').addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Executando...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}
+

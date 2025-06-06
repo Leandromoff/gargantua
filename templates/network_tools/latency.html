@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Monitoramento de Latência - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'network_tools:dashboard' %}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-stopwatch me-2"></i>Monitoramento de Latência
+            </h1>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-play-circle me-2"></i>Monitorar Latência
+                        </h5>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="host" class="form-label">
+                                    <i class="bi bi-globe me-1"></i>Host ou IP
+                                </label>
+                                <input type="text" class="form-control" id="host" name="host" 
+                                       placeholder="exemplo.com ou 8.8.8.8" required
+                                       value="{{ request.POST.host|default:'' }}">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Digite um nome de host ou endereço IP
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="count" class="form-label">
+                                    <i class="bi bi-hash me-1"></i>Número de testes
+                                </label>
+                                <select class="form-control" id="count" name="count">
+                                    <option value="5" {% if request.POST.count == '5' %}selected{% endif %}>5 testes</option>
+                                    <option value="10" {% if request.POST.count == '10' %}selected{% endif %}>10 testes</option>
+                                    <option value="15" {% if request.POST.count == '15' %}selected{% endif %}>15 testes</option>
+                                    <option value="20" {% if request.POST.count == '20' %}selected{% endif %}>20 testes</option>
+                                </select>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Número de testes de conectividade (intervalo de 1 segundo)
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="bi bi-play-circle me-2"></i>Iniciar Monitoramento
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">
+                            <i class="bi bi-info-circle me-2"></i>Sobre Monitoramento de Latência
+                        </h6>
+                        <p class="card-text small">
+                            O monitoramento de latência mede continuamente o tempo de resposta de conexão TCP 
+                            para avaliar a qualidade e estabilidade da rede.
+                        </p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Latência mínima, máxima e média</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Percentual de perda de pacotes</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Análise de estabilidade da rede</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Detecção de intermitências</li>
+                        </ul>
+                        <div class="alert alert-info small mt-3 mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
+                            O teste usa conexões TCP na porta 80 com intervalo de 1 segundo entre tentativas.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if result %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if result.success %}
+                                <i class="bi bi-check-circle text-success me-2"></i>Resultado do Monitoramento para {{ result.host }}
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger me-2"></i>Erro no Monitoramento para {{ result.host }}
+                            {% endif %}
+                        </h5>
+                        
+                        {% if result.success %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Monitoramento concluído com sucesso
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="card text-center">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-success">{{ result.min }} ms</h5>
+                                            <p class="card-text small">Latência Mínima</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card text-center">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary">{{ result.avg }} ms</h5>
+                                            <p class="card-text small">Latência Média</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card text-center">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-warning">{{ result.max }} ms</h5>
+                                            <p class="card-text small">Latência Máxima</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card text-center">
+                                        <div class="card-body">
+                                            <h5 class="card-title {% if result.packet_loss > 0 %}text-danger{% else %}text-success{% endif %}">{{ result.packet_loss }}%</h5>
+                                            <p class="card-text small">Perda de Pacotes</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Histórico de Latência</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-dark table-hover table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Teste</th>
+                                                    <th scope="col">Latência</th>
+                                                    <th scope="col">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for latency in result.latencies %}
+                                                <tr>
+                                                    <td>{{ forloop.counter }}</td>
+                                                    <td>
+                                                        {% if latency %}
+                                                        {{ latency }} ms
+                                                        {% else %}
+                                                        -
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if latency %}
+                                                        <span class="badge bg-success">Sucesso</span>
+                                                        {% else %}
+                                                        <span class="badge bg-danger">Falha</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ result.error }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus no campo host
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('host').focus();
+    });
+    
+    // Adicionar efeito de loading no botão de submit
+    document.querySelector('form').addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submit-btn');
+        const count = document.getElementById('count').value;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Monitorando (' + count + ' testes)...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}
+

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Ping - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'network_tools:dashboard' %}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-wifi me-2"></i>Ping
+            </h1>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-play-circle me-2"></i>Executar Ping
+                        </h5>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="host" class="form-label">
+                                    <i class="bi bi-globe me-1"></i>Host ou IP
+                                </label>
+                                <input type="text" class="form-control" id="host" name="host" 
+                                       placeholder="exemplo.com ou 8.8.8.8" required
+                                       value="{{ request.POST.host|default:'' }}">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Digite um nome de host ou endereço IP
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="count" class="form-label">
+                                    <i class="bi bi-hash me-1"></i>Número de pacotes
+                                </label>
+                                <select class="form-control" id="count" name="count">
+                                    <option value="4" {% if request.POST.count == '4' %}selected{% endif %}>4 pacotes</option>
+                                    <option value="8" {% if request.POST.count == '8' %}selected{% endif %}>8 pacotes</option>
+                                    <option value="16" {% if request.POST.count == '16' %}selected{% endif %}>16 pacotes</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="bi bi-play-circle me-2"></i>Executar Ping
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">
+                            <i class="bi bi-info-circle me-2"></i>Sobre o Ping
+                        </h6>
+                        <p class="card-text small">
+                            O Ping é uma ferramenta de diagnóstico de rede que testa a conectividade entre dois hosts. 
+                            Ele envia pacotes ICMP Echo Request e mede o tempo de resposta.
+                        </p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Verifica conectividade básica</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Mede latência de rede</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Detecta perda de pacotes</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Diagnóstica problemas de rede</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if result %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if result.success %}
+                                <i class="bi bi-check-circle text-success me-2"></i>Resultado do Ping para {{ result.host }}
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger me-2"></i>Erro no Ping para {{ result.host }}
+                            {% endif %}
+                        </h5>
+                        
+                        {% if result.success %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Ping executado com sucesso
+                            </div>
+                            
+                            <div class="bg-dark p-3 rounded">
+                                <pre class="text-light mb-0" style="font-family: 'Courier New', monospace; font-size: 0.9rem;">{{ result.output }}</pre>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ result.error }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus no campo host
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('host').focus();
+    });
+    
+    // Adicionar efeito de loading no botão de submit
+    document.querySelector('form').addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Executando...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}
+

@@ -1,0 +1,5 @@
+Watching for file changes with StatReloader
+[06/Jun/2025 18:20:53] "GET /accounts/login/ HTTP/1.1" 200 10087
+[06/Jun/2025 18:21:21] "POST /accounts/login/ HTTP/1.1" 302 0
+[06/Jun/2025 18:21:21] "GET /tools/ HTTP/1.1" 302 0
+[06/Jun/2025 18:21:21] "GET /accounts/login/?next=/tools/ HTTP/1.1" 200 10087

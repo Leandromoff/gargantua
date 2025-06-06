@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}DNS Lookup - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'network_tools:dashboard' %}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-globe me-2"></i>DNS Lookup
+            </h1>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-play-circle me-2"></i>Consultar DNS
+                        </h5>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="domain" class="form-label">
+                                    <i class="bi bi-globe me-1"></i>Domínio
+                                </label>
+                                <input type="text" class="form-control" id="domain" name="domain" 
+                                       placeholder="exemplo.com" required
+                                       value="{{ request.POST.domain|default:'' }}">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Digite o nome do domínio para consulta
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="record_type" class="form-label">
+                                    <i class="bi bi-list me-1"></i>Tipo de Registro
+                                </label>
+                                <select class="form-control" id="record_type" name="record_type">
+                                    <option value="A" {% if request.POST.record_type == 'A' %}selected{% endif %}>A (IPv4)</option>
+                                    <option value="AAAA" {% if request.POST.record_type == 'AAAA' %}selected{% endif %}>AAAA (IPv6)</option>
+                                    <option value="CNAME" {% if request.POST.record_type == 'CNAME' %}selected{% endif %}>CNAME (Alias)</option>
+                                    <option value="MX" {% if request.POST.record_type == 'MX' %}selected{% endif %}>MX (Mail Exchange)</option>
+                                    <option value="NS" {% if request.POST.record_type == 'NS' %}selected{% endif %}>NS (Name Server)</option>
+                                    <option value="TXT" {% if request.POST.record_type == 'TXT' %}selected{% endif %}>TXT (Text)</option>
+                                    <option value="SOA" {% if request.POST.record_type == 'SOA' %}selected{% endif %}>SOA (Start of Authority)</option>
+                                    <option value="PTR" {% if request.POST.record_type == 'PTR' %}selected{% endif %}>PTR (Reverse DNS)</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="bi bi-play-circle me-2"></i>Consultar DNS
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">
+                            <i class="bi bi-info-circle me-2"></i>Sobre DNS Lookup
+                        </h6>
+                        <p class="card-text small">
+                            O DNS Lookup consulta o Sistema de Nomes de Domínio para obter informações sobre registros DNS específicos.
+                        </p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-1"></i><strong>A:</strong> Endereço IPv4</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i><strong>AAAA:</strong> Endereço IPv6</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i><strong>CNAME:</strong> Nome canônico (alias)</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i><strong>MX:</strong> Servidor de email</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i><strong>NS:</strong> Servidor de nomes</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i><strong>TXT:</strong> Registros de texto</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i><strong>SOA:</strong> Autoridade da zona</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i><strong>PTR:</strong> DNS reverso</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if result %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if result.success %}
+                                <i class="bi bi-check-circle text-success me-2"></i>Resultado DNS {{ result.record_type }} para {{ result.domain }}
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger me-2"></i>Erro na consulta DNS para {{ result.domain }}
+                            {% endif %}
+                        </h5>
+                        
+                        {% if result.success %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Consulta DNS executada com sucesso
+                            </div>
+                            
+                            {% if result.output %}
+                                <div class="bg-dark p-3 rounded">
+                                    <pre class="text-light mb-0" style="font-family: 'Courier New', monospace; font-size: 0.9rem;">{{ result.output }}</pre>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Nenhum registro {{ result.record_type }} encontrado para {{ result.domain }}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ result.error }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus no campo domain
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('domain').focus();
+    });
+    
+    // Adicionar efeito de loading no botão de submit
+    document.querySelector('form').addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Consultando...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}
+

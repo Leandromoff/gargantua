@@ -1,0 +1,13 @@
+{
+  "admin": {
+    "username": "admin",
+    "email": "admin@example.com",
+    "password_hash": "pbkdf2_sha256$600000$g7bxcLMlEtntUlybKHJKmT$7QiTRPSVzYkVoB0+jurNuJb4qd+MXG7/xbxdsZpzHLs=",
+    "is_admin_site": true,
+    "is_active": true,
+    "created_at": "2025-06-01T00:00:00Z",
+    "roles": [
+      "administrator"
+    ]
+  }
+}

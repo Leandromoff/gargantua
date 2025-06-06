@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Geolocalização IP - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'network_tools:dashboard' %}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-geo-alt me-2"></i>Geolocalização IP
+            </h1>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-play-circle me-2"></i>Localizar IP
+                        </h5>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="ip" class="form-label">
+                                    <i class="bi bi-globe me-1"></i>Endereço IP
+                                </label>
+                                <input type="text" class="form-control" id="ip" name="ip" 
+                                       placeholder="8.8.8.8" required
+                                       value="{{ request.POST.ip|default:'' }}">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Digite um endereço IP válido (IPv4 ou IPv6)
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="bi bi-play-circle me-2"></i>Localizar IP
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">
+                            <i class="bi bi-info-circle me-2"></i>Sobre Geolocalização IP
+                        </h6>
+                        <p class="card-text small">
+                            A geolocalização IP determina a localização geográfica aproximada de um endereço IP 
+                            usando bancos de dados de geolocalização.
+                        </p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-1"></i>País e região</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Cidade e código postal</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Coordenadas geográficas</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Provedor de internet (ISP)</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Fuso horário</li>
+                        </ul>
+                        <div class="alert alert-warning small mt-3 mb-0">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            A precisão varia e pode não refletir a localização exata do usuário.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if result %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if result.success %}
+                                <i class="bi bi-check-circle text-success me-2"></i>Localização do IP {{ result.ip }}
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger me-2"></i>Erro ao localizar IP {{ result.ip }}
+                            {% endif %}
+                        </h5>
+                        
+                        {% if result.success %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Geolocalização obtida com sucesso
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Localização</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm table-dark mb-0">
+                                                <tr>
+                                                    <td><strong>País</strong></td>
+                                                    <td>{{ result.country|default:'-' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Região</strong></td>
+                                                    <td>{{ result.region|default:'-' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Cidade</strong></td>
+                                                    <td>{{ result.city|default:'-' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>CEP</strong></td>
+                                                    <td>{{ result.zip|default:'-' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Fuso Horário</strong></td>
+                                                    <td>{{ result.timezone|default:'-' }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-building me-2"></i>Provedor</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm table-dark mb-0">
+                                                <tr>
+                                                    <td><strong>ISP</strong></td>
+                                                    <td>{{ result.isp|default:'-' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Organização</strong></td>
+                                                    <td>{{ result.org|default:'-' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>AS</strong></td>
+                                                    <td>{{ result.as|default:'-' }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if result.lat and result.lon %}
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-map me-2"></i>Coordenadas</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-2">
+                                                <strong>Latitude:</strong> {{ result.lat }}<br>
+                                                <strong>Longitude:</strong> {{ result.lon }}
+                                            </p>
+                                            <a href="https://www.google.com/maps?q={{ result.lat }},{{ result.lon }}" 
+                                               target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-map me-1"></i>Ver no Google Maps
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ result.error }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus no campo ip
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('ip').focus();
+    });
+    
+    // Adicionar efeito de loading no botão de submit
+    document.querySelector('form').addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Localizando...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}
+

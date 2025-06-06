@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard ITSMTools
+            </h1>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hover-effect fade-in">
+                    <div class="card-body text-center">
+                        <i class="bi bi-wifi display-4 text-primary mb-3"></i>
+                        <h5 class="card-title">Ping</h5>
+                        <p class="card-text text-muted">Verificação básica de conectividade e tempo de resposta</p>
+                        <a href="{% url 'network_tools:ping' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>Executar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hover-effect fade-in">
+                    <div class="card-body text-center">
+                        <i class="bi bi-diagram-3 display-4 text-info mb-3"></i>
+                        <h5 class="card-title">Traceroute</h5>
+                        <p class="card-text text-muted">Análise de rota de pacotes até o destino</p>
+                        <a href="{% url 'network_tools:traceroute' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>Executar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hover-effect fade-in">
+                    <div class="card-body text-center">
+                        <i class="bi bi-search display-4 text-warning mb-3"></i>
+                        <h5 class="card-title">Port Scanner</h5>
+                        <p class="card-text text-muted">Verificação de portas abertas, fechadas ou filtradas</p>
+                        <a href="{% url 'network_tools:port_scanner' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>Executar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hover-effect fade-in">
+                    <div class="card-body text-center">
+                        <i class="bi bi-shield-check display-4 text-success mb-3"></i>
+                        <h5 class="card-title">Nmap</h5>
+                        <p class="card-text text-muted">Escaneamento avançado de rede com detecção de serviços</p>
+                        <a href="{% url 'network_tools:nmap' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>Executar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hover-effect fade-in">
+                    <div class="card-body text-center">
+                        <i class="bi bi-globe display-4 text-primary mb-3"></i>
+                        <h5 class="card-title">DNS Lookup</h5>
+                        <p class="card-text text-muted">Consulta de diversos tipos de registros DNS</p>
+                        <a href="{% url 'network_tools:dns_lookup' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>Executar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hover-effect fade-in">
+                    <div class="card-body text-center">
+                        <i class="bi bi-file-text display-4 text-info mb-3"></i>
+                        <h5 class="card-title">HTTP Headers</h5>
+                        <p class="card-text text-muted">Análise de cabeçalhos de resposta HTTP</p>
+                        <a href="{% url 'network_tools:http_headers' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>Executar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hover-effect fade-in">
+                    <div class="card-body text-center">
+                        <i class="bi bi-lock display-4 text-warning mb-3"></i>
+                        <h5 class="card-title">SSL Certificate</h5>
+                        <p class="card-text text-muted">Verificação de certificados SSL/TLS</p>
+                        <a href="{% url 'network_tools:ssl_check' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>Executar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hover-effect fade-in">
+                    <div class="card-body text-center">
+                        <i class="bi bi-geo-alt display-4 text-success mb-3"></i>
+                        <h5 class="card-title">Geolocalização IP</h5>
+                        <p class="card-text text-muted">Localização geográfica de endereços IP</p>
+                        <a href="{% url 'network_tools:geoip' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>Executar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hover-effect fade-in">
+                    <div class="card-body text-center">
+                        <i class="bi bi-stopwatch display-4 text-danger mb-3"></i>
+                        <h5 class="card-title">Monitoramento de Latência</h5>
+                        <p class="card-text text-muted">Verificação contínua de tempo de resposta</p>
+                        <a href="{% url 'network_tools:latency' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i>Executar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-info-circle me-2"></i>Sobre as Ferramentas
+                        </h5>
+                        <p class="card-text">
+                            O ITSMTools oferece um conjunto completo de ferramentas de diagnóstico de rede para administradores de sistema e profissionais de TI. 
+                            Todas as ferramentas são executadas de forma segura no servidor e fornecem resultados detalhados para análise de conectividade, 
+                            performance e segurança da rede.
+                        </p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Ferramentas de Conectividade</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="bi bi-check-circle text-success me-1"></i>Ping - Teste básico de conectividade</li>
+                                    <li><i class="bi bi-check-circle text-success me-1"></i>Traceroute - Rastreamento de rota</li>
+                                    <li><i class="bi bi-check-circle text-success me-1"></i>Latência - Monitoramento contínuo</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-info">Ferramentas de Análise</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="bi bi-check-circle text-success me-1"></i>Port Scanner - Verificação de portas</li>
+                                    <li><i class="bi bi-check-circle text-success me-1"></i>Nmap - Escaneamento avançado</li>
+                                    <li><i class="bi bi-check-circle text-success me-1"></i>DNS Lookup - Consultas DNS</li>
+                                    <li><i class="bi bi-check-circle text-success me-1"></i>HTTP Headers - Análise de cabeçalhos</li>
+                                    <li><i class="bi bi-check-circle text-success me-1"></i>SSL Certificate - Verificação de certificados</li>
+                                    <li><i class="bi bi-check-circle text-success me-1"></i>Geolocalização IP - Localização geográfica</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

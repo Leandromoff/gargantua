@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}HTTP Headers - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'network_tools:dashboard' %}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-file-text me-2"></i>HTTP Headers
+            </h1>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-play-circle me-2"></i>Analisar Headers HTTP
+                        </h5>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="url" class="form-label">
+                                    <i class="bi bi-link me-1"></i>URL
+                                </label>
+                                <input type="text" class="form-control" id="url" name="url" 
+                                       placeholder="https://exemplo.com" required
+                                       value="{{ request.POST.url|default:'' }}">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Digite a URL completa (com http:// ou https://)
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="bi bi-play-circle me-2"></i>Analisar Headers
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">
+                            <i class="bi bi-info-circle me-2"></i>Sobre HTTP Headers
+                        </h6>
+                        <p class="card-text small">
+                            Os cabeçalhos HTTP fornecem informações importantes sobre o servidor, 
+                            configurações de segurança e características da resposta.
+                        </p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Informações do servidor</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Configurações de cache</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Políticas de segurança</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Tipo de conteúdo</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Redirecionamentos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if result %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if result.success %}
+                                <i class="bi bi-check-circle text-success me-2"></i>Headers HTTP para {{ result.url }}
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger me-2"></i>Erro ao analisar {{ result.url }}
+                            {% endif %}
+                        </h5>
+                        
+                        {% if result.success %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Status: {{ result.status_code }}
+                                {% if result.final_url != result.url %}
+                                <br><small>Redirecionado para: {{ result.final_url }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Header</th>
+                                            <th scope="col">Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for header, value in result.headers.items %}
+                                        <tr>
+                                            <td><strong>{{ header }}</strong></td>
+                                            <td>
+                                                <code class="text-light">{{ value }}</code>
+                                                {% if header == 'Server' %}
+                                                <small class="text-muted d-block">Servidor web utilizado</small>
+                                                {% elif header == 'Content-Type' %}
+                                                <small class="text-muted d-block">Tipo de conteúdo</small>
+                                                {% elif header == 'Content-Length' %}
+                                                <small class="text-muted d-block">Tamanho do conteúdo</small>
+                                                {% elif header == 'Cache-Control' %}
+                                                <small class="text-muted d-block">Controle de cache</small>
+                                                {% elif header == 'Set-Cookie' %}
+                                                <small class="text-muted d-block">Configuração de cookies</small>
+                                                {% elif header == 'X-Frame-Options' %}
+                                                <small class="text-muted d-block">Proteção contra clickjacking</small>
+                                                {% elif header == 'Strict-Transport-Security' %}
+                                                <small class="text-muted d-block">Forçar HTTPS (HSTS)</small>
+                                                {% elif header == 'Content-Security-Policy' %}
+                                                <small class="text-muted d-block">Política de segurança de conteúdo</small>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ result.error }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus no campo url
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('url').focus();
+    });
+    
+    // Adicionar efeito de loading no botão de submit
+    document.querySelector('form').addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Analisando...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}
+

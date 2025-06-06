@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuários - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-people me-2"></i>Usuários
+            </h1>
+            <a href="{% url 'accounts:create_user' %}" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>Criar Usuário
+            </a>
+        </div>
+        
+        <div class="card fade-in">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Usuário</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Administrador</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr id="user-row-{{ user.username }}">
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    {% if user.is_admin_site %}
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-shield me-1"></i>Sim
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Não</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if user.is_active %}bg-success{% else %}bg-danger{% endif %} status-badge" id="status-{{ user.username }}">
+                                        {% if user.is_active %}
+                                        <i class="bi bi-check-circle me-1"></i>Ativo
+                                        {% else %}
+                                        <i class="bi bi-x-circle me-1"></i>Inativo
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user.username != request.user.username %}
+                                    <button class="btn btn-sm {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} btn-toggle" 
+                                            onclick="toggleUserStatus('{{ user.username }}')"
+                                            id="toggle-{{ user.username }}">
+                                        {% if user.is_active %}
+                                        <i class="bi bi-x-circle me-1"></i>Desativar
+                                        {% else %}
+                                        <i class="bi bi-check-circle me-1"></i>Ativar
+                                        {% endif %}
+                                    </button>
+                                    {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-person-check me-1"></i>Você
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <i class="bi bi-exclamation-circle me-2"></i>Nenhum usuário encontrado
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    async function toggleUserStatus(username) {
+        const toggleBtn = document.getElementById(`toggle-${username}`);
+        const statusBadge = document.getElementById(`status-${username}`);
+        
+        // Desabilitar botão e mostrar loading
+        const originalBtnContent = toggleBtn.innerHTML;
+        toggleBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Aguarde...';
+        toggleBtn.disabled = true;
+        
+        try {
+            const response = await fetch('{% url "accounts:toggle_user_status" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ username })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Atualizar status
+                if (data.new_status) {
+                    statusBadge.className = 'badge bg-success status-badge';
+                    statusBadge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Ativo';
+                    toggleBtn.className = 'btn btn-sm btn-outline-danger btn-toggle';
+                    toggleBtn.innerHTML = '<i class="bi bi-x-circle me-1"></i>Desativar';
+                } else {
+                    statusBadge.className = 'badge bg-danger status-badge';
+                    statusBadge.innerHTML = '<i class="bi bi-x-circle me-1"></i>Inativo';
+                    toggleBtn.className = 'btn btn-sm btn-outline-success btn-toggle';
+                    toggleBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Ativar';
+                }
+                
+                // Mostrar mensagem de sucesso
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show fade-in';
+                alertDiv.innerHTML = `
+                    <i class="bi bi-check-circle me-2"></i>${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+                
+                // Auto-fechar alerta após 3 segundos
+                setTimeout(() => {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 300);
+                }, 3000);
+            } else {
+                throw new Error(data.error || 'Erro ao alterar status do usuário');
+            }
+        } catch (error) {
+            // Mostrar mensagem de erro
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show fade-in';
+            alertDiv.innerHTML = `
+                <i class="bi bi-exclamation-triangle me-2"></i>${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+            
+            // Restaurar botão
+            toggleBtn.innerHTML = originalBtnContent;
+        } finally {
+            toggleBtn.disabled = false;
+        }
+    }
+</script>
+{% endblock %}
+

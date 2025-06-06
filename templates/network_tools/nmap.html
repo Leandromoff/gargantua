@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Nmap - Gargantua{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'network_tools:dashboard' %}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-shield-check me-2"></i>Nmap
+            </h1>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-play-circle me-2"></i>Executar Nmap
+                        </h5>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="host" class="form-label">
+                                    <i class="bi bi-globe me-1"></i>Host ou IP
+                                </label>
+                                <input type="text" class="form-control" id="host" name="host" 
+                                       placeholder="exemplo.com ou 8.8.8.8" required
+                                       value="{{ request.POST.host|default:'' }}">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Digite um nome de host ou endereço IP
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="scan_type" class="form-label">
+                                    <i class="bi bi-gear me-1"></i>Tipo de Escaneamento
+                                </label>
+                                <select class="form-control" id="scan_type" name="scan_type">
+                                    <option value="-sS" {% if request.POST.scan_type == '-sS' %}selected{% endif %}>SYN Scan (Stealth)</option>
+                                    <option value="-sT" {% if request.POST.scan_type == '-sT' %}selected{% endif %}>TCP Connect Scan</option>
+                                    <option value="-sU" {% if request.POST.scan_type == '-sU' %}selected{% endif %}>UDP Scan</option>
+                                    <option value="-sV" {% if request.POST.scan_type == '-sV' %}selected{% endif %}>Version Detection</option>
+                                    <option value="-O" {% if request.POST.scan_type == '-O' %}selected{% endif %}>OS Detection</option>
+                                </select>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Selecione o tipo de escaneamento desejado
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="bi bi-play-circle me-2"></i>Executar Nmap
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">
+                            <i class="bi bi-info-circle me-2"></i>Sobre o Nmap
+                        </h6>
+                        <p class="card-text small">
+                            O Nmap é uma ferramenta avançada de descoberta de rede e auditoria de segurança. 
+                            Oferece diversos tipos de escaneamento para análise detalhada de hosts e serviços.
+                        </p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Descoberta de hosts ativos</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Detecção de serviços e versões</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Identificação de sistema operacional</li>
+                            <li><i class="bi bi-check-circle text-success me-1"></i>Escaneamento stealth</li>
+                        </ul>
+                        <div class="alert alert-warning small mt-3 mb-0">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            Use apenas em redes próprias ou com autorização explícita.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if result %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if result.success %}
+                                <i class="bi bi-check-circle text-success me-2"></i>Resultado do Nmap para {{ result.host }}
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger me-2"></i>Erro no Nmap para {{ result.host }}
+                            {% endif %}
+                        </h5>
+                        
+                        {% if result.success %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Escaneamento Nmap executado com sucesso
+                            </div>
+                            
+                            <div class="bg-dark p-3 rounded">
+                                <pre class="text-light mb-0" style="font-family: 'Courier New', monospace; font-size: 0.9rem;">{{ result.output }}</pre>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ result.error }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus no campo host
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('host').focus();
+    });
+    
+    // Adicionar efeito de loading no botão de submit
+    document.querySelector('form').addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Executando...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}
+
